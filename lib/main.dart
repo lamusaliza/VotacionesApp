@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'screens/create_voting_screen.dart';
+import 'screens/results_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -31,7 +32,7 @@ class WelcomeScreen extends StatelessWidget {
             children: <Widget>[
               header(),
               SizedBox(height: 30),
-              buttonsGrid(),
+              buttonsGrid(context),
             ],
           ),
         ),
@@ -103,7 +104,7 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  Widget buttonsGrid() {
+  Widget buttonsGrid(BuildContext context) {
     return GridView.count(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -112,43 +113,60 @@ class WelcomeScreen extends StatelessWidget {
       mainAxisSpacing: 20, // Aumentado para más espacio entre botones
       childAspectRatio: 1.4, // Ajustado para hacer los botones más pequeños
       children: <Widget>[
-        createButton('Crear Nueva Votación', Icons.add),
-        createButton('Continuar Votación', Icons.play_arrow),
-        createButton('Cerrar Votación', Icons.close),
-        createButton('Consulta de Resultados', Icons.list),
+        createButton('Crear Nueva Votación', Icons.add, () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CreateVotingScreen()),
+          );
+        }),
+        createButton('Continuar Votación', Icons.play_arrow, () {
+          // Implementar la lógica para continuar votación
+        }),
+        createButton('Cerrar Votación', Icons.close, () {
+          // Implementar la lógica para cerrar votación
+        }),
+        createButton('Consulta de Resultados', Icons.list, () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ResultsScreen()),
+          );
+        }),
       ],
     );
   }
 
-  Widget createButton(String text, IconData icon) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 15), // Agrega padding vertical
-      decoration: BoxDecoration(
-        color: Colors.purple[100], // Botones con fondo lila claro
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 1,
-            blurRadius: 2,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.purple[800]), // Añade el icono al botón
-          SizedBox(height: 5), // Espacio entre el icono y el texto
-          Text(
-            text,
-            style: TextStyle(
-              color: Colors.purple[800], // Texto en color lila oscuro
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+  Widget createButton(String text, IconData icon, VoidCallback onPress) {
+    return GestureDetector(
+      onTap: onPress,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 15), // Agrega padding vertical
+        decoration: BoxDecoration(
+          color: Colors.purple[100], // Botones con fondo lila claro
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 1,
+              blurRadius: 2,
+              offset: Offset(0, 2),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.purple[800]), // Añade el icono al botón
+            SizedBox(height: 5), // Espacio entre el icono y el texto
+            Text(
+              text,
+              style: TextStyle(
+                color: Colors.purple[800], // Texto en color lila oscuro
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
