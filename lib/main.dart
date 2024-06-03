@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'screens/create_voting_screen.dart';
+import 'screens/continue_voting_screen.dart';
+import 'screens/close_voting_screen.dart';
 import 'screens/results_screen.dart';
+import 'services/voting_manager.dart';
 
 void main() {
   runApp(MyApp());
@@ -9,14 +13,19 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Aplicación de Votación',
-      debugShowCheckedModeBanner: false, // Esto elimina el banner de Debug
-      theme: ThemeData(
-        primarySwatch: Colors.purple, // Ajustado a un tema con base lila
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => VotingManager()),
+      ],
+      child: MaterialApp(
+        title: 'Aplicación de Votación',
+        debugShowCheckedModeBanner: false, // Esto elimina el banner de Debug
+        theme: ThemeData(
+          primarySwatch: Colors.purple, // Ajustado a un tema con base lila
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: WelcomeScreen(),
       ),
-      home: WelcomeScreen(),
     );
   }
 }
@@ -120,10 +129,16 @@ class WelcomeScreen extends StatelessWidget {
           );
         }),
         createButton('Continuar Votación', Icons.play_arrow, () {
-          // Implementar la lógica para continuar votación
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ContinueVotingScreen()),
+          );
         }),
         createButton('Cerrar Votación', Icons.close, () {
-          // Implementar la lógica para cerrar votación
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => CloseVotingScreen()),
+          );
         }),
         createButton('Consulta de Resultados', Icons.list, () {
           Navigator.push(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/voting_manager.dart';
 
 class CreateVotingScreen extends StatefulWidget {
@@ -7,80 +8,89 @@ class CreateVotingScreen extends StatefulWidget {
 }
 
 class _CreateVotingScreenState extends State<CreateVotingScreen> {
-  final TextEditingController _questionController = TextEditingController();
-  final TextEditingController _optionController = TextEditingController();
+  final TextEditingController questionController = TextEditingController();
+  final TextEditingController optionController = TextEditingController();
   List<String> options = [];
-
-  void _addOption() {
-    final text = _optionController.text;
-    if (text.isNotEmpty) {
-      setState(() {
-        options.add(text);
-        _optionController.clear();
-      });
-    }
-  }
-
-  void _createVoting() {
-    if (_questionController.text.isNotEmpty && options.length >= 2) {
-      VotingManager().createVoting(_questionController.text, options);
-      Navigator.pop(context);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Crear Nueva Votación')),
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        title: Text('Crear Nueva Votación'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _questionController,
-                decoration: InputDecoration(
-                  labelText: 'Pregunta de la votación',
-                  border: OutlineInputBorder(),
-                ),
-              ),
+          children: <Widget>[
+            TextField(
+              controller: questionController,
+              decoration: InputDecoration(labelText: 'Pregunta de la votación'),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _optionController,
-                decoration: InputDecoration(
-                  labelText: 'Opción',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (_) => _addOption(),
-              ),
+            TextField(
+              controller: optionController,
+              decoration: InputDecoration(labelText: 'Opción'),
             ),
+            SizedBox(height: 10),
             ElevatedButton(
-              onPressed: _addOption,
+              onPressed: addOption,
               child: Text('Agregar Opción'),
             ),
             ElevatedButton(
-              onPressed: _createVoting,
+              onPressed: createVoting,
               child: Text('Crear Votación'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: options.length >= 2 ? Colors.green : Colors.grey,
               ),
             ),
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: options.length,
-              itemBuilder: (context, index) => ListTile(
-                title: Text(options[index]),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () => setState(() => options.removeAt(index)),
-                ),
+            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(options[index]),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          options.removeAt(index);
+                        });
+                      },
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void addOption() {
+    if (optionController.text.isNotEmpty) {
+      setState(() {
+        options.add(optionController.text);
+        optionController.clear();
+      });
+    }
+  }
+
+  void createVoting() {
+    if (questionController.text.isNotEmpty && options.length >= 2) {
+      Provider.of<VotingManager>(context, listen: false).createVoting(
+        questionController.text,
+        options,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Su votación ha sido creada')),
+      );
+    }
   }
 }

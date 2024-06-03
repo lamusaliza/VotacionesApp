@@ -1,42 +1,48 @@
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/voting.dart'; // Asegúrate de que esta ruta sea correcta
+import '../models/voting.dart';
+import 'database_helper.dart';
 
-class VotingManager {
-  static final VotingManager _instance = VotingManager._internal();
-  factory VotingManager() => _instance;
-  VotingManager._internal();
-
+class VotingManager with ChangeNotifier {
   Voting? currentVoting;
 
-  void createVoting(String question, List<String> options) {
-    currentVoting = Voting(question: question, options: options);
-    saveVoting();
+  VotingManager() {
+    loadVoting();
   }
 
-  void closeVoting() {
-    currentVoting = null;
-    clearVoting();
+  Future<void> createVoting(String question, List<String> options) async {
+    currentVoting = Voting(
+      question: question,
+      options: options,
+      votes: {for (var option in options) option: 0},
+    );
+    await DatabaseHelper.instance.create(currentVoting!);
+    notifyListeners();
   }
 
-  void saveVoting() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('currentVoting', currentVoting?.toJson().toString() ?? '');
-  }
-
-  Future<void> loadVoting() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? votingJson = prefs.getString('currentVoting');
-    if (votingJson != null) {
-      currentVoting = Voting.fromJson(votingJson as Map<String, dynamic>);
+  Future<void> vote(String option) async {
+    if (currentVoting != null) {
+      currentVoting!.votes[option] = (currentVoting!.votes[option] ?? 0) + 1;
+      await DatabaseHelper.instance.update(currentVoting!);
+      notifyListeners();
     }
   }
 
-  void clearVoting() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove('currentVoting');
+  Future<void> closeVoting() async {
+    if (currentVoting != null) {
+      await DatabaseHelper.instance.addToHistory(currentVoting!);
+      await DatabaseHelper.instance.deleteCurrentVoting();
+      currentVoting = null;
+      notifyListeners();
+    }
   }
 
-  Map<String, int>? getResults() {
-    return currentVoting?.results;
+  Future<void> loadVoting() async {
+    currentVoting = await DatabaseHelper.instance.getCurrentVoting();
+    notifyListeners();
+  }
+
+  Future<List<Voting>> getVotingHistory() async {
+    return await DatabaseHelper.instance.getVotingHistory();
   }
 }
